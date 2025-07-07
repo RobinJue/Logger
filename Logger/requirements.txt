@@ -1,0 +1,13 @@
+# Logger Library Requirements
+# This library uses only Python standard library modules
+# No external dependencies required!
+
+# Python version requirement
+# This library works with Python 3.6+
+
+# Optional dependencies for enhanced functionality:
+# - colorama: For better color support on Windows (optional)
+# - rich: For rich text formatting (optional)
+
+# To install optional dependencies:
+# pip install colorama rich 

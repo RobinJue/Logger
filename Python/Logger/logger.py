@@ -67,42 +67,8 @@ class Logger:
             self.children[name] = child
         return self.children[name]
         
-    def _log(self, level: LogLevel, message: str, *args, **kwargs):
-        """Internal logging method."""
-        if level.value < self.level.value:
-            return
-            
-        # Format message with args
-        if args:
-            message = message % args
-            
-        # Get the calling script name from the stack trace
-        calling_script = self._get_calling_script()
-            
-        # Create log record
-        record = LogRecord(
-            name=self.name,
-            level=level,
-            message=message,
-            timestamp=datetime.now(),
-            calling_script=calling_script,
-            **kwargs
-        )
-        
-        # Send to handlers
-        for handler in self.handlers:
-            try:
-                handler.emit(record)
-            except Exception as e:
-                # Prevent infinite recursion if handler fails
-                sys.stderr.write(f"Handler error: {e}\n")
-                
-        # Propagate to parent if enabled
-        if self.propagate and self.parent:
-            self.parent._log(level, message, *args, **kwargs)
-            
-    def _get_calling_script(self) -> str:
-        """Get the name of the script that called the logger, without .py extension."""
+    def _get_calling_script(self) -> tuple[str, str]:
+        """Get the name of the script that called the logger and its relative path."""
         import inspect
         import os
         
@@ -121,9 +87,52 @@ class Logger:
                 script_name = base
                 if script_name.endswith('.py'):
                     script_name = script_name[:-3]
-                return script_name
+                
+                # Convert to relative path from current working directory
+                try:
+                    relative_path = os.path.relpath(filename, os.getcwd())
+                except ValueError:
+                    # Fallback to absolute path if relative path fails
+                    relative_path = filename
+                
+                return script_name, relative_path
         # Fallback to the logger name if we can't find the calling script
-        return self.name
+        return self.name, ""
+
+    def _log(self, level: LogLevel, message: str, *args, **kwargs):
+        """Internal logging method."""
+        if level.value < self.level.value:
+            return
+            
+        # Format message with args
+        if args:
+            message = message % args
+            
+        # Get the calling script name and path from the stack trace
+        calling_script, calling_path = self._get_calling_script()
+            
+        # Create log record
+        record = LogRecord(
+            name=self.name,
+            level=level,
+            message=message,
+            timestamp=datetime.now(),
+            calling_script=calling_script,
+            calling_path=calling_path,
+            **kwargs
+        )
+        
+        # Send to handlers
+        for handler in self.handlers:
+            try:
+                handler.emit(record)
+            except Exception as e:
+                # Prevent infinite recursion if handler fails
+                sys.stderr.write(f"Handler error: {e}\n")
+                
+        # Propagate to parent if enabled
+        if self.propagate and self.parent:
+            self.parent._log(level, message, *args, **kwargs)
             
     def debug(self, message: str, *args, **kwargs):
         """Log a debug message."""
@@ -160,8 +169,9 @@ class LogRecord:
         self.message = message
         self.timestamp = timestamp
         self.calling_script = kwargs.get('calling_script', name)
+        self.calling_path = kwargs.get('calling_path', "")
         self.exc_info = kwargs.get('exc_info', False)
-        self.extra = {k: v for k, v in kwargs.items() if k not in ['exc_info', 'calling_script']}
+        self.extra = {k: v for k, v in kwargs.items() if k not in ['exc_info', 'calling_script', 'calling_path']}
         
         # Add exception info if present
         if self.exc_info:

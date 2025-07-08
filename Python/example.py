@@ -22,85 +22,85 @@ import worker_module
 def database_operations():
     """Simulate database operations."""
     logger = get_logger("example")  # Get the same logger instance
-    logger.debug("[DB] Debug: Preparing to connect to database...")
-    logger.info("[DB] Info: Starting database operations")
-    logger.warning("[DB] Warning: Using default credentials (not recommended)")
+    logger.debug("Preparing to connect to database...")
+    logger.info("Starting database operations")
+    logger.warning("Using default credentials (not recommended)")
     
     try:
-        logger.debug("[DB] Debug: Connecting to database...")
+        logger.debug("Connecting to database...")
         time.sleep(0.1)  # Simulate work
-        logger.info("[DB] Info: Database connection established")
+        logger.info("Database connection established")
         
-        logger.debug("[DB] Debug: Executing query...")
+        logger.debug("Executing query...")
         time.sleep(0.1)  # Simulate work
-        logger.info("[DB] Info: Query executed successfully")
+        logger.info("Query executed successfully")
         
         # Simulate a warning condition
-        logger.warning("[DB] Warning: Query took longer than expected")
+        logger.warning("Query took longer than expected")
         
         # Simulate a critical error
         if True:
-            raise RuntimeError("[DB] Critical: Database corruption detected!")
+            raise RuntimeError("Database corruption detected!")
         
     except Exception as e:
-        logger.error(f"[DB] Error: Database operation failed: {e}")
-        logger.critical("[DB] Critical: Shutting down database operations due to error!")
+        logger.error(f"Database operation failed: {e}")
+        logger.critical("Shutting down database operations due to error!")
         # Don't re-raise to allow program to continue
 
 # Module 2: File operations
 def file_operations():
     """Simulate file operations."""
     logger = get_logger("example")  # Get the same logger instance
-    logger.debug("[File] Debug: Preparing to open file...")
-    logger.info("[File] Info: Starting file operations")
+    logger.debug("Preparing to open file...")
+    logger.info("Starting file operations")
     
     try:
-        logger.debug("[File] Debug: Opening file...")
+        logger.debug("Opening file...")
         time.sleep(0.1)  # Simulate work
-        logger.info("[File] Info: File opened successfully")
+        logger.info("File opened successfully")
         
-        logger.debug("[File] Debug: Processing file content...")
+        logger.debug("Processing file content...")
         time.sleep(0.1)  # Simulate work
-        logger.info("[File] Info: File processing completed")
+        logger.info("File processing completed")
         
         # Simulate a warning
-        logger.warning("[File] Warning: File is larger than expected")
+        logger.warning("File is larger than expected")
         
         # Simulate an error
         if True:
-            raise IOError("[File] Error: Failed to write to file!")
+            raise IOError("Failed to write to file!")
         
     except Exception as e:
-        logger.error(f"[File] Error: File operation failed: {e}")
-        logger.critical("[File] Critical: File system may be corrupted!")
+        logger.error(f"File operation failed: {e}")
+        logger.critical("File system may be corrupted!")
         # Don't re-raise to allow program to continue
 
 # Module 3: Network operations
 def network_operations():
     """Simulate network operations."""
     logger = get_logger("example")  # Get the same logger instance
-    logger.debug("[Net] Debug: Preparing to establish network connection...")
-    logger.info("[Net] Info: Starting network operations")
+    logger.debug("Preparing to establish network connection...")
+    logger.info("Starting network operations")
     
     try:
-        logger.debug("[Net] Debug: Establishing network connection...")
+        logger.debug("Establishing network connection...")
         time.sleep(0.1)  # Simulate work
-        logger.info("[Net] Info: Network connection established")
+        logger.info("Network connection established")
         
-        logger.debug("[Net] Debug: Sending data...")
+        logger.debug("Sending data...")
         time.sleep(0.1)  # Simulate work
-        logger.info("[Net] Info: Data sent successfully")
+        logger.info("Data sent successfully")
         
         # Simulate a warning
-        logger.warning("[Net] Warning: Network latency is high")
+        logger.warning("Network latency is high")
         
         # Simulate an error
         if True:
-            raise TimeoutError("[Net] Error: Network timeout occurred!")
+            raise TimeoutError("Network timeout occurred!")
         
     except Exception as e:
-        logger.error(f"[Net] Error: Network operation failed: {e}")
-        logger.critical("[Net] Critical: Network is down!")
+        logger.error(f"Network operation failed: {e}")
+        logger.critical("Network is down!")
         # Don't re-raise to allow program to continue
 
 def main():

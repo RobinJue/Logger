@@ -20,16 +20,56 @@ class Formatter(ABC):
 class SimpleFormatter(Formatter):
     """Simple text formatter with timestamp, level, calling_script, and message."""
     
-    def __init__(self, date_format: str = "%Y-%m-%d %H:%M:%S"):
+    def __init__(self, date_format: str = "%Y-%m-%d %H:%M:%S", enable_links: bool = None):
         self.date_format = date_format
+        # Auto-detect if we should enable links based on terminal support
+        if enable_links is None:
+            self.enable_links = self._detect_link_support()
+        else:
+            self.enable_links = enable_links
+            
+    def _detect_link_support(self) -> bool:
+        """Detect if the terminal supports hyperlinks."""
+        import os
+        # Check if we're in a terminal that likely supports hyperlinks
+        term = os.environ.get('TERM', '')
+        term_program = os.environ.get('TERM_PROGRAM', '')
+        
+        # Common terminals that support hyperlinks
+        supported_terms = ['xterm-256color', 'screen-256color', 'tmux-256color']
+        supported_programs = ['iTerm.app', 'Apple_Terminal', 'vscode']
+        
+        return (term in supported_terms or 
+                term_program in supported_programs or
+                'ITERM' in os.environ.get('TERM_PROGRAM', ''))
+        
+    def _create_link(self, text: str, file_path: str) -> str:
+        """Create a clickable terminal link."""
+        if not self.enable_links or not file_path:
+            return text.ljust(15)
+        
+        try:
+            # ANSI escape sequence for clickable link
+            # Format: \033]8;;file://path\033\\text\033]8;;\033\\
+            link_start = f"\033]8;;file://{file_path}\033\\"
+            link_end = "\033]8;;\033\\"
+            linked_text = f"{link_start}{text}{link_end}"
+            return linked_text.ljust(15)
+        except:
+            # Fallback if something goes wrong
+            return text.ljust(15)
         
     def format(self, record) -> str:
         """Format record as: [timestamp] LEVEL calling_script: message"""
         timestamp = record.timestamp.strftime(self.date_format)
         level = str(record.level).ljust(8)
-        script_name = getattr(record, 'calling_script', record.name).ljust(15)
         
-        formatted = f"[{timestamp}] {level} {script_name}: {record.message}"
+        # Get script name and create clickable link if path is available
+        script_name = getattr(record, 'calling_script', record.name)
+        file_path = getattr(record, 'calling_path', "")
+        script_display = self._create_link(script_name, file_path)
+        
+        formatted = f"[{timestamp}] {level} {script_display}: {record.message}"
         
         # Add exception info if present
         if record.exc_text:
@@ -63,6 +103,7 @@ class JSONFormatter(Formatter):
         if self.include_name:
             data["logger"] = record.name
             data["calling_script"] = getattr(record, 'calling_script', record.name)
+            data["calling_path"] = getattr(record, 'calling_path', "")
             
         if record.exc_text:
             data["exception"] = record.exc_text
@@ -86,22 +127,62 @@ class ColoredFormatter(Formatter):
         'RESET': '\033[0m'      # Reset
     }
     
-    def __init__(self, date_format: str = "%Y-%m-%d %H:%M:%S", use_colors: bool = True):
+    def __init__(self, date_format: str = "%Y-%m-%d %H:%M:%S", use_colors: bool = True, enable_links: bool = None):
         self.date_format = date_format
         self.use_colors = use_colors
+        # Auto-detect if we should enable links based on terminal support
+        if enable_links is None:
+            self.enable_links = self._detect_link_support()
+        else:
+            self.enable_links = enable_links
+            
+    def _detect_link_support(self) -> bool:
+        """Detect if the terminal supports hyperlinks."""
+        import os
+        # Check if we're in a terminal that likely supports hyperlinks
+        term = os.environ.get('TERM', '')
+        term_program = os.environ.get('TERM_PROGRAM', '')
+        
+        # Common terminals that support hyperlinks
+        supported_terms = ['xterm-256color', 'screen-256color', 'tmux-256color']
+        supported_programs = ['iTerm.app', 'Apple_Terminal', 'vscode']
+        
+        return (term in supported_terms or 
+                term_program in supported_programs or
+                'ITERM' in os.environ.get('TERM_PROGRAM', ''))
+        
+    def _create_link(self, text: str, file_path: str) -> str:
+        """Create a clickable terminal link."""
+        if not self.enable_links or not file_path:
+            return text.ljust(15)
+        
+        try:
+            # ANSI escape sequence for clickable link
+            # Format: \033]8;;file://path\033\\text\033]8;;\033\\
+            link_start = f"\033]8;;file://{file_path}\033\\"
+            link_end = "\033]8;;\033\\"
+            linked_text = f"{link_start}{text}{link_end}"
+            return linked_text.ljust(15)
+        except:
+            # Fallback if something goes wrong
+            return text.ljust(15)
         
     def format(self, record) -> str:
         """Format record with colors."""
         timestamp = record.timestamp.strftime(self.date_format)
         level = str(record.level).ljust(8)
-        script_name = getattr(record, 'calling_script', record.name).ljust(15)
+        
+        # Get script name and create clickable link if path is available
+        script_name = getattr(record, 'calling_script', record.name)
+        file_path = getattr(record, 'calling_path', "")
+        script_display = self._create_link(script_name, file_path)
         
         if self.use_colors:
             color = self.COLORS.get(record.level.name, '')
             reset = self.COLORS['RESET']
-            formatted = f"[{timestamp}] {color}{level}{reset} {script_name}: {record.message}"
+            formatted = f"[{timestamp}] {color}{level}{reset} {script_display}: {record.message}"
         else:
-            formatted = f"[{timestamp}] {level} {script_name}: {record.message}"
+            formatted = f"[{timestamp}] {level} {script_display}: {record.message}"
         
         # Add exception info if present
         if record.exc_text:
@@ -135,6 +216,7 @@ class TemplateFormatter(Formatter):
             'level': str(record.level),
             'name': record.name,
             'calling_script': getattr(record, 'calling_script', record.name),
+            'calling_path': getattr(record, 'calling_path', ""),
             'message': record.message,
             'levelname': record.level.name,
             'levelno': record.level.value

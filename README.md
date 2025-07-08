@@ -81,13 +81,13 @@ Logger/
 ├── Python/
 │   ├── Logger/           # Python library
 │   ├── example.py        # Basic usage example
-│   └── USAGE.md         # Detailed usage guide
+│   └── USAGE.md          # Detailed usage guide
 ├── JavaScript/
-│   ├── Logger/          # JavaScript library
-│   ├── example.js       # Basic usage example
-│   └── USAGE.md         # Detailed usage guide
-├── LICENSE              # MIT License
-└── README.md           # This file
+│   ├── Logger/           # JavaScript library
+│   ├── example.js        # Basic usage example
+│   └── USAGE.md          # Detailed usage guide
+├── LICENSE               # MIT License
+└── README.md             # This file
 ```
 
 ## Installation

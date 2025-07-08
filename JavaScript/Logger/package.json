@@ -1,0 +1,26 @@
+{
+  "name": "portable-logger",
+  "version": "1.0.0",
+  "description": "A portable, self-contained logging library for Node.js",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node example.js"
+  },
+  "keywords": [
+    "logging",
+    "logger",
+    "portable",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "Robin Jüngerich",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RobinJue/Logger.git"
+  }
+} 

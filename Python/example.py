@@ -15,6 +15,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'Logger'))
 
 from Logger import create_logger, get_logger, close_all_loggers, LogLevel
 
+# Add import for the new worker module
+import worker_module
+
 # Module 1: Database operations
 def database_operations():
     """Simulate database operations."""
@@ -111,6 +114,9 @@ def main():
     database_operations()
     file_operations()
     network_operations()
+    
+    # Call the new worker module to demonstrate logging from another file
+    worker_module.do_work()
     
     logger.info("All operations completed (with some simulated errors)")
     logger.info("=== Multi-Module Application Finished ===")

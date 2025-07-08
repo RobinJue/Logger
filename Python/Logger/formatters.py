@@ -18,18 +18,18 @@ class Formatter(ABC):
 
 
 class SimpleFormatter(Formatter):
-    """Simple text formatter with timestamp, level, name, and message."""
+    """Simple text formatter with timestamp, level, calling_script, and message."""
     
     def __init__(self, date_format: str = "%Y-%m-%d %H:%M:%S"):
         self.date_format = date_format
         
     def format(self, record) -> str:
-        """Format record as: [timestamp] LEVEL name: message"""
+        """Format record as: [timestamp] LEVEL calling_script: message"""
         timestamp = record.timestamp.strftime(self.date_format)
         level = str(record.level).ljust(8)
-        name = record.name.ljust(15)
+        script_name = getattr(record, 'calling_script', record.name).ljust(15)
         
-        formatted = f"[{timestamp}] {level} {name}: {record.message}"
+        formatted = f"[{timestamp}] {level} {script_name}: {record.message}"
         
         # Add exception info if present
         if record.exc_text:
@@ -62,6 +62,7 @@ class JSONFormatter(Formatter):
             
         if self.include_name:
             data["logger"] = record.name
+            data["calling_script"] = getattr(record, 'calling_script', record.name)
             
         if record.exc_text:
             data["exception"] = record.exc_text
@@ -93,14 +94,14 @@ class ColoredFormatter(Formatter):
         """Format record with colors."""
         timestamp = record.timestamp.strftime(self.date_format)
         level = str(record.level).ljust(8)
-        name = record.name.ljust(15)
+        script_name = getattr(record, 'calling_script', record.name).ljust(15)
         
         if self.use_colors:
             color = self.COLORS.get(record.level.name, '')
             reset = self.COLORS['RESET']
-            formatted = f"[{timestamp}] {color}{level}{reset} {name}: {record.message}"
+            formatted = f"[{timestamp}] {color}{level}{reset} {script_name}: {record.message}"
         else:
-            formatted = f"[{timestamp}] {level} {name}: {record.message}"
+            formatted = f"[{timestamp}] {level} {script_name}: {record.message}"
         
         # Add exception info if present
         if record.exc_text:
@@ -133,6 +134,7 @@ class TemplateFormatter(Formatter):
             'timestamp': record.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             'level': str(record.level),
             'name': record.name,
+            'calling_script': getattr(record, 'calling_script', record.name),
             'message': record.message,
             'levelname': record.level.name,
             'levelno': record.level.value

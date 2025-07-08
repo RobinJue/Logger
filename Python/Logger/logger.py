@@ -76,12 +76,16 @@ class Logger:
         if args:
             message = message % args
             
+        # Get the calling script name from the stack trace
+        calling_script = self._get_calling_script()
+            
         # Create log record
         record = LogRecord(
             name=self.name,
             level=level,
             message=message,
             timestamp=datetime.now(),
+            calling_script=calling_script,
             **kwargs
         )
         
@@ -96,6 +100,30 @@ class Logger:
         # Propagate to parent if enabled
         if self.propagate and self.parent:
             self.parent._log(level, message, *args, **kwargs)
+            
+    def _get_calling_script(self) -> str:
+        """Get the name of the script that called the logger, without .py extension."""
+        import inspect
+        import os
+        
+        # Get the current stack
+        stack = inspect.stack()
+        
+        # Only skip logger implementation files
+        skip_files = [
+            'logger.py', 'formatters.py', 'handlers.py', 'registry.py', 'config.py'
+        ]
+        for frame_info in stack:
+            filename = frame_info.filename
+            base = os.path.basename(filename)
+            if base not in skip_files and '__pycache__' not in filename:
+                # Extract just the filename without path and strip .py
+                script_name = base
+                if script_name.endswith('.py'):
+                    script_name = script_name[:-3]
+                return script_name
+        # Fallback to the logger name if we can't find the calling script
+        return self.name
             
     def debug(self, message: str, *args, **kwargs):
         """Log a debug message."""
@@ -131,8 +159,9 @@ class LogRecord:
         self.level = level
         self.message = message
         self.timestamp = timestamp
+        self.calling_script = kwargs.get('calling_script', name)
         self.exc_info = kwargs.get('exc_info', False)
-        self.extra = {k: v for k, v in kwargs.items() if k != 'exc_info'}
+        self.extra = {k: v for k, v in kwargs.items() if k not in ['exc_info', 'calling_script']}
         
         # Add exception info if present
         if self.exc_info:
